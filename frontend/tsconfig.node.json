@@ -12,6 +12,8 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
+    "noEmitOnError": true,
+    "noEmitHelpers": true,
 
     "composite": true,
     "allowSyntheticDefaultImports": true,
