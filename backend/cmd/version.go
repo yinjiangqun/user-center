@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/yinjiangqun/user-center/version"
+
 	"github.com/spf13/cobra"
+	"github.com/yinjiangqun/user-center/backend/version"
 )
 
 // versionCmd represents the version command

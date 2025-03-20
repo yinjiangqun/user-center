@@ -1,58 +1,67 @@
 package config
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/spf13/viper"
 )
 
-// Provider defines a set of read-only methods for accessing the application
-// configuration params as defined in one of the config files.
+const (
+    BACKEND_SERVER_PORT = 8081
+)
+
+// Provider 定义配置提供者接口
 type Provider interface {
-	ConfigFileUsed() string
-	Get(key string) interface{}
-	GetBool(key string) bool
-	GetDuration(key string) time.Duration
-	GetFloat64(key string) float64
-	GetInt(key string) int
-	GetInt64(key string) int64
-	GetSizeInBytes(key string) uint
-	GetString(key string) string
-	GetStringMap(key string) map[string]interface{}
-	GetStringMapString(key string) map[string]string
-	GetStringMapStringSlice(key string) map[string][]string
-	GetStringSlice(key string) []string
-	GetTime(key string) time.Time
-	InConfig(key string) bool
-	IsSet(key string) bool
+    GetString(key string) string
+    GetInt(key string) int
+    GetBool(key string) bool
+    GetDuration(key string) time.Duration
+    // 添加其他必要的方法...
 }
 
-var defaultConfig *viper.Viper
-
-// Config returns a default config providers
-func Config() Provider {
-	return defaultConfig
+type viperProvider struct {
+    v *viper.Viper
 }
 
-// LoadConfigProvider returns a configured viper instance
-func LoadConfigProvider(appName string) Provider {
-	return readViperConfig(appName)
-}
+var defaultConfig *viperProvider
 
 func init() {
-	defaultConfig = readViperConfig("USER-CENTER")
+    v := viper.New()
+    v.SetEnvPrefix("USER-CENTER")
+    v.AutomaticEnv()
+    
+    // 设置默认值
+    v.SetDefault("server.port", BACKEND_SERVER_PORT)
+    
+    // 加载配置文件
+    v.SetConfigFile("config.json")
+    if err := v.ReadInConfig(); err != nil {
+        // 使用日志记录错误，而不是直接panic
+        fmt.Printf("Error reading config file: %v\n", err)
+    }
+    
+    defaultConfig = &viperProvider{v: v}
 }
 
-func readViperConfig(appName string) *viper.Viper {
-	v := viper.New()
-	v.SetEnvPrefix(appName)
-	v.AutomaticEnv()
+// Config 返回默认配置提供者
+func GetConfig() Provider {
+    return defaultConfig
+}
 
-	// global defaults
-	
-	v.SetDefault("json_logs", false)
-	v.SetDefault("loglevel", "debug")
-	
+// 实现Provider接口的方法
+func (p *viperProvider) GetString(key string) string {
+    return p.v.GetString(key)
+}
 
-	return v
+func (p *viperProvider) GetInt(key string) int {
+    return p.v.GetInt(key)
+}
+
+func (p *viperProvider) GetBool(key string) bool {
+    return p.v.GetBool(key)
+}
+
+func (p *viperProvider) GetDuration(key string) time.Duration {
+    return p.v.GetDuration(key)
 }

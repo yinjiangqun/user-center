@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/sirupsen/logrus"
-	"github.com/yinjiangqun/user-center/config"
+	"github.com/yinjiangqun/user-center/backend/config"
 )
 
 // Logger defines a set of methods for writing application logs. Derived from and

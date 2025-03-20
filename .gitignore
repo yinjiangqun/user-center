@@ -1,3 +1,9 @@
 bin
 vendor
-user-center.exe
+
+# 编译产物
+*.exe
+__debug_bin*
+
+# IDE配置（根据团队情况决定是否注释掉）
+.vscode/
