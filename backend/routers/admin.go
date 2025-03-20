@@ -1,7 +1,7 @@
 package routers
 
 import (
-    "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 )
 
 // RegisterAdminRoutes defines admin-related routes

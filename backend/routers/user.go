@@ -1,7 +1,7 @@
 package routers
 
 import (
-    "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 )
 
 // RegisterUserRoutes defines user-related routes

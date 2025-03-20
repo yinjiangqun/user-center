@@ -39,7 +39,7 @@ type Logger interface {
 var defaultLogger *logrus.Logger
 
 func init() {
-	defaultLogger = newLogrusLogger(config.Config())
+	defaultLogger = newLogrusLogger(config.GetConfig())
 }
 
 
