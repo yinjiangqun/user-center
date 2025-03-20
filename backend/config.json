@@ -1,0 +1,18 @@
+{
+    "server": {
+        "port": 8080,
+        "host": "localhost"
+    },
+    "database": {
+        "type": "mysql",
+        "host": "127.0.0.1",
+        "port": 3306,
+        "username": "postgres",
+        "password": "king01010101",
+        "dbname": "user_center"
+    },
+    "logging": {
+        "level": "info",
+        "format": "json"
+    }
+}
