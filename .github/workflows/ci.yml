@@ -1,16 +1,18 @@
 name: CI/CD Pipeline
 
+defaults:
+  run:
+    working-directory: backend
+
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
     paths-ignore:
       - "**.md"
       - "docs/**"
   pull_request:
-    branches: [main, develop]
+    branches: [main]
     types: [opened, synchronize, reopened]
-  schedule:
-    - cron: "0 2 * * *"
   workflow_dispatch:
     inputs:
       environment:
@@ -25,6 +27,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Debug Directory Structure
+        run: |
+          pwd
+          ls -la
+          ls -la backend
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
@@ -34,10 +42,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ~/.cache/go-build
             ~/go/pkg/mod
-            ./backend/go.sum
-          key: ${{ runner.os }}-go-${{ hashFiles('./backend/go.sum') }}
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('backend/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
 
@@ -50,32 +57,29 @@ jobs:
           node-version: "18"
 
       - name: Install Backend Dependencies
-        working-directory: ./backend
         run: |
           go mod tidy
           go mod download
 
       - name: Install Frontend Dependencies
-        working-directory: ./frontend
+        working-directory: ../frontend
         run: npm install
 
       - name: Run Backend Tests
-        working-directory: ./backend
         run: go test ./...
 
       - name: Run Frontend Tests
-        working-directory: ./frontend
+        working-directory: ../frontend
         run: npm test
 
       - name: Build Backend
-        working-directory: ./backend
         run: go build -v ./...
 
       - name: Build Frontend
-        working-directory: ./frontend
+        working-directory: ../frontend
         run: npm run build
 
       - name: Run Linters
         run: |
-          cd frontend && npm run lint
+          cd ../frontend && npm run lint
           cd ../backend && $(go env GOPATH)/bin/golangci-lint run ./...
