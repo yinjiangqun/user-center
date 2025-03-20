@@ -34,9 +34,10 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ~/go/pkg/mod
             ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+            ~/go/pkg/mod
+            ./backend/go.sum
+          key: ${{ runner.os }}-go-${{ hashFiles('./backend/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
 
@@ -49,8 +50,10 @@ jobs:
           node-version: "18"
 
       - name: Install Backend Dependencies
-        working-directory: ${{ github.workspace }}/backend
-        run: go mod download
+        working-directory: ./backend
+        run: |
+          go mod tidy
+          go mod download
 
       - name: Install Frontend Dependencies
         working-directory: ./frontend
