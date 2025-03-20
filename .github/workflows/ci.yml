@@ -31,7 +31,6 @@ jobs:
         run: |
           pwd
           ls -la
-          ls -la backend
 
       - name: Set up Go
         uses: actions/setup-go@v4
