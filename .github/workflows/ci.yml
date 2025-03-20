@@ -61,21 +61,21 @@ jobs:
           go mod download
 
       - name: Install Frontend Dependencies
-        working-directory: ../frontend
+        working-directory: ${{ github.workspace }}/frontend # 使用绝对路径
         run: npm install
 
       - name: Run Backend Tests
         run: go test ./...
 
       - name: Run Frontend Tests
-        working-directory: ../frontend
+        working-directory: ${{ github.workspace }}/frontend
         run: npm test
 
       - name: Build Backend
         run: go build -v ./...
 
       - name: Build Frontend
-        working-directory: ../frontend
+        working-directory: ${{ github.workspace }}/frontend
         run: npm run build
 
       - name: Run Linters
