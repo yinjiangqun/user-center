@@ -81,6 +81,22 @@
 
 name: CI/CD Pipeline
 
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        default: "staging"
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
