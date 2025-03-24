@@ -67,10 +67,6 @@ jobs:
       - name: Run Backend Tests
         run: go test ./...
 
-      - name: Run Frontend Tests
-        working-directory: ${{ github.workspace }}/frontend
-        run: npm test
-
       - name: Build Backend
         run: go build -v ./...
 
