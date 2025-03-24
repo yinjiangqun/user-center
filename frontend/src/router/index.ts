@@ -1,4 +1,8 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import {
+  createRouter,
+  createWebHistory,
+  RouteLocationNormalizedLoaded,
+} from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
 const router = createRouter({
@@ -19,7 +23,7 @@ const router = createRouter({
 
 export default router
 
-router.beforeEach((to, next) => {
+router.beforeEach((to: RouteLocationNormalizedLoaded, next) => {
   const userStore = useUserStore()
   if (to.meta.requiresAuth && !userStore.isAuthenticated) {
     next('/login')
@@ -27,5 +31,3 @@ router.beforeEach((to, next) => {
     next()
   }
 })
-
-export default router
