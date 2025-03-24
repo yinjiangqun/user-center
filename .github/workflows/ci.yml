@@ -114,15 +114,7 @@ jobs:
         with:
           node-version: "18"
           cache: "npm"
-          cache-dependency-path: ../frontend/package-lock.json # 确保路径正确
-
-      - name: Cache npm dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('../frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          cache-dependency-path: ${{ github.workspace }}/frontend/package-lock.json # 使用绝对路径
 
       - name: Install Dependencies
         run: |
