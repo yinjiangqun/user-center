@@ -76,7 +76,10 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Install golangci-lint
-        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.68.0 # 更新版本
+        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest # 使用 latest
+
+      - name: Verify golangci-lint installation
+        run: $(go env GOPATH)/bin/golangci-lint --version
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
