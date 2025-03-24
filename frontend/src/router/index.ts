@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useUserStore } from '../stores/user'
+import { useUserStore } from '@/stores/user'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -9,12 +9,17 @@ const router = createRouter({
       name: 'Home',
       component: () => import('@/components/HelloWorld.vue'),
     },
+    {
+      path: '/login',
+      name: 'Login',
+      component: () => import('@/views/Login.vue'),
+    },
   ],
 })
 
 export default router
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, next) => {
   const userStore = useUserStore()
   if (to.meta.requiresAuth && !userStore.isAuthenticated) {
     next('/login')
@@ -22,3 +27,5 @@ router.beforeEach((to, from, next) => {
     next()
   }
 })
+
+export default router
