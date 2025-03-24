@@ -66,5 +66,7 @@ func main() {
 	})
 
 	// 启动服务器，监听 8081 端口
-	router.Run(":8081")
+	if err := router.Run(":8081"); err != nil {
+			log.Fatal("server error:", err)
+	}
 }
