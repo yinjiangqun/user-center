@@ -1,74 +1,108 @@
 name: CI/CD Pipeline
-
-on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - "**.md"
-      - "docs/**"
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened]
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: "Environment to deploy to"
-        required: true
-        default: "staging"
-
-jobs:
-  frontend:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18"
-          cache: "npm"
-          cache-dependency-path: "frontend/package-lock.json"
-
-      - name: Install dependencies
-        run: |
-          cd frontend
-          npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Test
-        run: npm test
-
-  backend:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: "1.21"
-
-      - name: Install Backend Dependencies
-        run: |
-          go mod tidy
-          go mod download
-
-      - name: Install golangci-lint
-        run: |
-          # 指定使用较低版本的golangci-lint
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.50.1
-
-      - name: Run lint
-        run: |
-          $(go env GOPATH)/bin/golangci-lint run --timeout=5m --allow-parallel-runners ./...
-
-      - name: Build
-        run: go build -v ./...
+ 
+ defaults:
+   run:
+     working-directory: backend
+ 
+ on:
+   push:
+     branches: [main]
+     paths-ignore:
+       - "**.md"
+       - "docs/**"
+   pull_request:
+     branches: [main]
+     types: [opened, synchronize, reopened]
+   workflow_dispatch:
+     inputs:
+       environment:
+         description: "Environment to deploy to"
+         required: true
+         default: "staging"
+ 
+ jobs:
+   build-and-test:
+   frontend:
+     runs-on: ubuntu-latest
+     defaults:
+       run:
+         working-directory: frontend
+ 
+     steps:
+       - uses: actions/checkout@v3
+ 
+       - name: Debug Directory Structure
+         run: |
+           pwd
+           ls -la
+       - name: Set up Node.js
+         uses: actions/setup-node@v3
+         with:
+           node-version: "18"
+           cache: "npm"
+           cache-dependency-path: frontend/package-lock.json
+ 
+       - name: Install dependencies
+         run: npm ci
+ 
+       - name: Run lint
+         run: npm run lint
+ 
+       - name: Build
+         run: npm run build
+ 
+   backend:
+     runs-on: ubuntu-latest
+     defaults:
+       run:
+         working-directory: backend
+ 
+     steps:
+       - uses: actions/checkout@v3
+ 
+       - name: Set up Go
+         uses: actions/setup-go@v4
+         with:
+           go-version: "1.21"
+           go-version: "1.24"
+ 
+       - name: Go Cache
+         uses: actions/cache@v3
+ @@ -48,33 +51,11 @@ jobs:
+             ${{ runner.os }}-go-
+ 
+       - name: Install golangci-lint
+         run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
+ 
+       - name: Set up Node.js
+         uses: actions/setup-node@v3
+         with:
+           node-version: "18"
+ 
+       - name: Install Backend Dependencies
+         run: |
+           go mod tidy
+           go mod download
+ 
+       - name: Install Frontend Dependencies
+         working-directory: ${{ github.workspace }}/frontend # 使用绝对路径
+         run: npm install
+           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
+ 
+       - name: Run Backend Tests
+         run: go test ./...
+       - name: Run lint
+         run: $(go env GOPATH)/bin/golangci-lint run ./...
+ 
+       - name: Build Backend
+       - name: Build
+         run: go build -v ./...
+ 
+       - name: Build Frontend
+         working-directory: ${{ github.workspace }}/frontend
+         run: npm run build
+ 
+       - name: Run Linters
+         run: |
+           cd ../frontend && npm run lint
+           cd ../backend && $(go env GOPATH)/bin/golangci-lint run ./...
