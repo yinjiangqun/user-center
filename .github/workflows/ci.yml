@@ -1,24 +1,85 @@
+# name: CI/CD Pipeline
+
+# defaults:
+#   run:
+#     working-directory: backend
+
+# on:
+#   push:
+#     branches: [main]
+#     paths-ignore:
+#       - "**.md"
+#       - "docs/**"
+#   pull_request:
+#     branches: [main]
+#     types: [opened, synchronize, reopened]
+#   workflow_dispatch:
+#     inputs:
+#       environment:
+#         description: "Environment to deploy to"
+#         required: true
+#         default: "staging"
+
+# jobs:
+#   build-and-test:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - uses: actions/checkout@v3
+
+#       - name: Debug Directory Structure
+#         run: |
+#           pwd
+#           ls -la
+
+#       - name: Set up Go
+#         uses: actions/setup-go@v4
+#         with:
+#           go-version: "1.21"
+
+#       - name: Go Cache
+#         uses: actions/cache@v3
+#         with:
+#           path: |
+#             ~/go/pkg/mod
+#             ~/.cache/go-build
+#           key: ${{ runner.os }}-go-${{ hashFiles('backend/go.sum') }}
+#           restore-keys: |
+#             ${{ runner.os }}-go-
+
+#       - name: Install golangci-lint
+#         run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
+
+#       - name: Set up Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: "18"
+
+#       - name: Install Backend Dependencies
+#         run: |
+#           go mod tidy
+#           go mod download
+
+#       - name: Install Frontend Dependencies
+#         working-directory: ${{ github.workspace }}/frontend # 使用绝对路径
+#         run: npm install
+
+#       - name: Run Backend Tests
+#         run: go test ./...
+
+#       - name: Build Backend
+#         run: go build -v ./...
+
+#       - name: Build Frontend
+#         working-directory: ${{ github.workspace }}/frontend
+#         run: npm run build
+
+#       - name: Run Linters
+#         run: |
+#           cd ../frontend && npm run lint
+#           cd ../backend && $(go env GOPATH)/bin/golangci-lint run ./...
+
 name: CI/CD Pipeline
-
-defaults:
-  run:
-    working-directory: backend
-
-on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - "**.md"
-      - "docs/**"
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened]
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: "Environment to deploy to"
-        required: true
-        default: "staging"
 
 jobs:
   build-and-test:
@@ -27,54 +88,41 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Debug Directory Structure
-        run: |
-          pwd
-          ls -la
-
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: "1.21"
 
-      - name: Go Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('backend/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Install golangci-lint
-        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
-
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "18"
+          cache: "npm"
+          cache-dependency-path: "frontend/package-lock.json"
 
-      - name: Install Backend Dependencies
+      - name: Install Dependencies
         run: |
+          cd backend
           go mod tidy
           go mod download
+          cd ../frontend
+          npm ci
 
-      - name: Install Frontend Dependencies
-        working-directory: ${{ github.workspace }}/frontend # 使用绝对路径
-        run: npm install
-
-      - name: Run Backend Tests
-        run: go test ./...
-
-      - name: Build Backend
-        run: go build -v ./...
-
-      - name: Build Frontend
-        working-directory: ${{ github.workspace }}/frontend
-        run: npm run build
-
-      - name: Run Linters
+      - name: Run Tests
         run: |
-          cd ../frontend && npm run lint
-          cd ../backend && $(go env GOPATH)/bin/golangci-lint run ./...
+          cd backend
+          go test ./...
+
+      - name: Build
+        run: |
+          cd backend
+          go build -v ./...
+          cd ../frontend
+          npm run build
+
+      - name: Lint
+        run: |
+          cd frontend
+          npm run lint
+          cd ../backend
+          golangci-lint run --timeout=5m
